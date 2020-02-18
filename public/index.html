@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Microsoft / Intel IoT Camp</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="refresh" content="30">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+
+    <style>
+        body {
+            margin-top: 60px
+        }
+        table {
+            width: 100%;
+        }
+
+        table th {
+            font-weight: bold;
+            text-align: center;
+        }
+
+        table td {
+            text-align: center;
+        }
+    </style>
+
+</head>
+
+<body ng-app="app" ng-controller="indexController" class="container">
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false"
+                aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#/">Microsoft / Intel IoT Camp</a>
+            </div>
+            <div id="navbar" class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li><a href="#/" class="active">Home</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="row">
+                <div class="col-md-12">
+                    <h2>Devices</h2> 
+                    <div ng-show="devices.length === 0">
+                        No devices retrieved
+                    </div>
+                    <div ng-show="devices.length > 0">
+                        <h4>Showing {{ devices.length }} devices and their latest values </h4>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="text-align:center">&nbsp;</th>
+                                    <th style="text-align:left">Device</th>
+                                    <th style="text-align:right">Time</th>
+                                    <th style="text-align:right">Temperature</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="m in devices">
+                                    <td style="text-align:center"><button type="button" class="btn btn-xs btn-success" style="padding: 0px 2px;" ng-click="testBuzzer(m.deviceid)"><span class="glyphicon glyphicon-flash"></span></button></td>
+                                    <td style="text-align:left">{{ m.deviceid }}</td>
+                                    <td style="text-align:right">{{ m.timestamp | date : 'M/d/yy h:mm:ss a' }}</td>
+                                    <td style="text-align:right">{{ m.temperature | number }}&deg;C</td>
+                                </tr>
+                            </tbody>
+                        </table> 
+                    </div>                    
+                </div>
+            </div>
+            <div class="row">
+                <canvas id="myChart" width="400" height="400"></canvas>
+<!-- <script>
+var myChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+        datasets: [{
+            label: '# of Votes',
+            data: [12, 19, 3, 5, 2, 3],
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(255, 206, 86, 0.2)',
+                'rgba(75, 192, 192, 0.2)',
+                'rgba(153, 102, 255, 0.2)',
+                'rgba(255, 159, 64, 0.2)'
+            ],
+            borderColor: [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)'
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero: true
+                }
+            }]
+        }
+    }
+});
+</script> -->
+
+            </div>
+        </div>
+        <div class="col-md-6">
+            <h2>Temperature History</h2>
+            <div ng-show="recentMeasurements.length === 0">
+                No temperature history found
+            </div>
+            <div ng-show="recentMeasurements.length > 0">
+                <h4>Most recent {{ recentMeasurements.length }} readings </h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="text-align:left">Device</th>
+                            <th style="text-align:right">Time</th>
+                            <th style="text-align:right">Temperature</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="m in recentMeasurements">
+                            <td style="text-align:left">{{ m.deviceid }}</td>
+                            <td style="text-align:right">{{ m.timestamp | date : 'M/d/yy h:mm:ss a' }}</td>
+                            <td style="text-align:right">{{ m.temperature | number }}&deg;C</td>
+                        </tr>
+                    </tbody>
+                </table> 
+            </div>
+        </div>
+    </div>
+
+    <script src="/jquery/dist/jquery.js"></script>
+    <script src="/angular/angular.min.js"></script>
+    <script src="/powerbi-client/dist/powerbi.js"></script>
+    <script>
+        (function() {
+            'use strict';
+            
+            angular.module('app', []).controller('indexController', function($scope, $http) {
+            
+                $scope.recentMeasurements = [];
+                $scope.devices = [];
+                        
+                //Get the recent measurements from the node.js server back end
+                $scope.getRecentMeasurements = function(){
+                    $http.get('/api/recent').then(function(result) {
+                        
+                        var data = result.data;
+
+                        if(data.length > 0) {
+                            angular.forEach(data, function(x) {
+                                $scope.recentMeasurements.push({
+                                    deviceid: x[0].value,
+                                    timestamp:  x[1].value,
+                                    temperature: x[2].value
+                                });
+                            }); 
+                        }
+                        var time=[];
+                        var reading=[];
+                        data = data.reverse();
+                        for (var i in data){
+                            console.log(data[i])
+                            time.push(data[i][1].value);
+                            reading.push(data[i][2].value)
+                        }
+                        console.log(time)
+                        var chartdata = {
+                            labels: time,
+                            datasets : [
+                                {
+                                    label: 'temperature',
+                                    backgroundColor: 'rgba(200, 200, 200, 0.75)',
+                    borderColor: 'rgba(200, 200, 200, 0.75)',
+                    hoverBackgroundColor: 'rgba(200, 200, 200, 1)',
+                    hoverBorderColor: 'rgba(200, 200, 200, 1)',
+                                    data: reading
+                                }
+                            ]
+                        };
+                        var ctx = document.getElementById('myChart').getContext('2d');
+                        var barGraph = new Chart(ctx, {
+            type: 'line',
+            data: chartdata
+        });
+                    });
+                }
+
+                //Get just the very latest measurements from the node.js server back end
+                $scope.getDevices = function(){
+                    $http.get('/api/devices').then(function(result) {
+
+                        var data = result.data;
+                        
+                        if(data.length > 0) {
+                            angular.forEach(data, function(x) {
+                                $scope.devices.push({
+                                    deviceid: x[0].value,
+                                    timestamp:  x[1].value,
+                                    temperature: x[2].value
+                                });
+                            }); 
+                        } 
+                    });
+                }
+
+                $scope.getRecentMeasurements();
+                $scope.getDevices();
+            });
+        })();
+    </script>
+</body>
+
+</html>
