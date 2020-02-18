@@ -12,7 +12,7 @@ var TYPES = require('tedious').TYPES;
 var sqlServer = process.env.sqlServer;
 var sqlDatabase = process.env.sqlDatabase;
 var sqlLogin = process.env.sqlLogin;
-var sqlPassword = sqlPassword;
+var sqlPassword = process.env.sqlPassword;
 
 // Setup the tedious connection pool
 var sqlPoolConfig = {
@@ -87,7 +87,7 @@ var bodyParser = require('body-parser');
 
 // website setup
 var app = express();
-var localport = nconf.get('localport');
+var localport = process.env.localport;
 var port = normalizePort(process.env.PORT || localport);
 app.set('port', port)
 app.use(express.static('public'));
