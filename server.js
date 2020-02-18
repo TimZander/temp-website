@@ -1,29 +1,5 @@
 'use strict';
 
-// ============== Use nconf to read config.json ===============
-
-// nconf require
-var nconf = require('nconf');
-
-// Read in the settings specified in the config.json file
-nconf.argv().env().file('./config.json');
-
-// ==================== Azure IoT HuB Prep ====================
-
-// Azure Iot Hub related requires
-// var ServiceClient = require('azure-iothub').Client;
-// var Message = require('azure-iot-common').Message;
-
-// Azure iot hub configuraiton values
-// the iotHubConnectionString value should be the iot hubs 
-// "service" SAS policy connection string, or  
-// the connection string for any other policy that has "send" 
-// permissions on the iot hub.  
-//var iotHubConnString = nconf.get('iotHubConnString');
-
-// Setup the iot hub connection 
-//var iotHubClient = ServiceClient.fromConnectionString(iotHubConnString);
-
 // ==================== SQL Server Client Prep ====================
 
 // tedious (aka TDS => "Tabular Data Stream") 
@@ -33,10 +9,10 @@ var Request = require('tedious').Request;
 var TYPES = require('tedious').TYPES;
 
 // SQL Server connection configuration values
-var sqlServer = nconf.get('sqlServer');
-var sqlDatabase = nconf.get('sqlDatabase');
-var sqlLogin = nconf.get('sqlLogin');
-var sqlPassword = nconf.get('sqlPassword');
+var sqlServer = process.env.sqlServer;
+var sqlDatabase = process.env.sqlDatabase;
+var sqlLogin = process.env.sqlLogin;
+var sqlPassword = sqlPassword;
 
 // Setup the tedious connection pool
 var sqlPoolConfig = {
