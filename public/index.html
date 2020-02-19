@@ -80,7 +80,7 @@
                                     <td style="text-align:center"><button type="button" class="btn btn-xs btn-success" style="padding: 0px 2px;" ng-click="testBuzzer(m.deviceid)"><span class="glyphicon glyphicon-flash"></span></button></td>
                                     <td style="text-align:left">{{ m.deviceid }}</td>
                                     <td style="text-align:right">{{ m.timestamp | date : 'M/d/yy h:mm:ss a' }}</td>
-                                    <td style="text-align:right">{{ m.temperature | number }}&deg;C</td>
+                                    <td style="text-align:right">{{ m.temperature | number }}&deg;{{ m.scale }}</td>
                                 </tr>
                             </tbody>
                         </table> 
@@ -107,7 +107,7 @@
                         <tr ng-repeat="m in recentMeasurements">
                             <td style="text-align:left">{{ m.deviceid }}</td>
                             <td style="text-align:right">{{ m.timestamp | date : 'M/d/yy h:mm:ss a' }}</td>
-                            <td style="text-align:right">{{ m.temperature | number }}&deg;C</td>
+                            <td style="text-align:right">{{ m.temperature | number }}&deg;{{ m.scale }}</td>
                         </tr>
                     </tbody>
                 </table> 
@@ -118,6 +118,7 @@
     <script src="/jquery/dist/jquery.js"></script>
     <script src="/angular/angular.min.js"></script>
     <script>
+        var convert_to_f = true;
         (function() {
             'use strict';
             
@@ -137,7 +138,8 @@
                                 $scope.recentMeasurements.push({
                                     deviceid: x[0].value,
                                     timestamp:  x[1].value,
-                                    temperature: x[2].value
+                                    temperature: convert_temp(x[2].value),
+                                    scale: convert_to_f ? 'F' : "C"
                                 });
                             }); 
                         }
@@ -145,20 +147,20 @@
                         var reading=[];
                         data = data.reverse();
                         for (var i in data){
-                            console.log(data[i])
+                            //console.log(data[i])
                             time.push(data[i][1].value);
-                            reading.push(data[i][2].value)
+                            reading.push(convert_temp(data[i][2].value));
                         }
-                        console.log(time)
+                        //console.log(time)
                         var chartdata = {
                             labels: time,
                             datasets : [
                                 {
                                     label: 'temperature',
                                     backgroundColor: 'rgba(200, 200, 200, 0.75)',
-                    borderColor: 'rgba(200, 200, 200, 0.75)',
-                    hoverBackgroundColor: 'rgba(200, 200, 200, 1)',
-                    hoverBorderColor: 'rgba(200, 200, 200, 1)',
+                                    borderColor: 'rgba(200, 200, 200, 0.75)',
+                                    hoverBackgroundColor: 'rgba(200, 200, 200, 1)',
+                                    hoverBorderColor: 'rgba(200, 200, 200, 1)',
                                     data: reading
                                 }
                             ]
@@ -182,7 +184,8 @@
                                 $scope.devices.push({
                                     deviceid: x[0].value,
                                     timestamp:  x[1].value,
-                                    temperature: x[2].value
+                                    temperature: convert_temp(x[2].value),
+                                    scale: convert_to_f ? 'F' : "C"
                                 });
                             }); 
                         } 
@@ -193,6 +196,16 @@
                 $scope.getDevices();
             });
         })();
+
+        function convert_temp(c){
+            if(convert_to_f){
+                return ctof(c);
+            }
+            return c;
+        }
+        function ctof(c){
+            return c * 9 / 5 + 32;
+        }
     </script>
 </body>
 
