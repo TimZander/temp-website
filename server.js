@@ -104,7 +104,7 @@ app.get('/api/devices', function(req, res) {
 
 app.get('/api/recent', function(req, res) {
     console.log('Retrieving recent measurments from sql');
-    var query="select top 240 probe_serial, reading_date, temperature_value from dbo.readings order by reading_date desc;";
+    var query="select probe_serial, reading_date, temperature_value from dbo.readings where reading_date > GETDATE() -1 order by reading_date desc;";
     runQuery(res, query);
 });
 
