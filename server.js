@@ -60,7 +60,7 @@ function runQuery(res, query) {
         sqlRequest.on('doneInProc', function(rowCount, more, rows) {
             res.json(rows);  
             console.log('doneInProc: ' + rowCount + ' rows returned');
-            console.log(rows.length);  
+            //console.log(rows.length);  
             rows.forEach(function(row){
             row.forEach(function(column) {  
                 if (column.value === null) {  
@@ -69,7 +69,7 @@ function runQuery(res, query) {
                 result+= column.value + " ";  
                 }  
             });  
-            console.log(result);  
+            //console.log(result);  
             result ="";  
             });
             poolConnection.release();
@@ -96,50 +96,17 @@ app.use(bodyParser.json());
 
 // Used to retrieve just the last measurement for each device 
 // in the dbo.Measurements table in the database.
-/* app.get('/api/devices', function(req, res) {
+app.get('/api/devices', function(req, res) {
     console.log('Retrieving devices with their last measurement');
-    var query="select  top 100 deviceid, [timestamp], temperature from dbo.Devices;";
-    runQuery(res, query);
-}); */
-
-app.get('/api/recent', function(req, res) {
-    console.log('Retrieving recent measurments from sql');
-    var query="select top 100 probe_serial, reading_date, temperature_value from dbo.readings order by reading_date desc;";
+    var query="select top 3 probe_serial, reading_date, temperature_value from dbo.readings ORDER BY reading_date desc;";
     runQuery(res, query);
 });
 
-/* app.post('/api/testBuzzer', function(req, res) {
-
-    var deviceid = req.body.deviceid;
-
-    console.log('Sending buzzer test alert to ' + deviceid);
-
-    iotHubClient.open(function(err) {
-        if (err) {
-            console.error('Could not connect: ' + err.message);
-        } else { 
-            var data = JSON.stringify({ "type": "temp","message": "Buzzer Test     " });
-            var message = new Message (data);
-            console.log('Sending message: ' + data);
-            iotHubClient.send(deviceid, message, printResultFor('send'));
-            console.log('Async message sent');
-        }
-    });
-
-    // Helper function to print results in the console
-    function printResultFor(op) {
-        return function printResult(err, res) {
-            if (err) {
-                console.log(op + ' error: ' + err.toString());
-            } else {
-                console.log(op + ' status: ' + res.constructor.name);
-            }
-        };
-    }
-
-
-    res.end();
-}); */
+app.get('/api/recent', function(req, res) {
+    console.log('Retrieving recent measurments from sql');
+    var query="select top 240 probe_serial, reading_date, temperature_value from dbo.readings order by reading_date desc;";
+    runQuery(res, query);
+});
 
 app.listen(port, function() {
     console.log('app running on http://localhost:' + port);
@@ -161,6 +128,3 @@ function normalizePort(val) {
   return false;
 }
 
-
-
-    
