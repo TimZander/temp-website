@@ -13,7 +13,7 @@
   "dependencies": {
     "azure-event-hubs": "0.0.1",
     "azure-iot-common": "1.1.6",
-    "azure-iot-device": "1.1.8",
+    "azure-iot-device": "1.18.3",
     "azure-iothub": "1.1.8",
     "body-parser": "1.17.1",
     "express": "4.15.2",
