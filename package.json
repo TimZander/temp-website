@@ -16,7 +16,7 @@
     "azure-iot-device": "1.18.3",
     "azure-iothub": "1.1.8",
     "body-parser": "1.17.1",
-    "express": "4.15.2",
+    "express": "4.22.1",
     "nconf": "0.8.4",
     "tedious": "1.14.0",
     "tedious-connection-pool": "1.0.5"
